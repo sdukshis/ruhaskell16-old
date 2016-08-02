@@ -1,0 +1,376 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <link rel="stylesheet" href="reveal.js/css/reveal.css">
+        <link rel="stylesheet" href="reveal.js/css/theme/white.css">
+        <link rel="stylesheet" href="reveal.js/lib/css/zenburn.css">
+        <link rel="stylesheet" href="ansi2html.css">
+    </head>
+    <body class="body_foreground body_background">
+        <div class="reveal">
+            <div class="slides">
+                <section data-markdown>
+                    <script type="text/template">
+                        ## С++ concepts and Haskell type classes
+
+                        Pavel Filonov (pavel.filonov@kaspersky.com)
+                    </script>
+                </section>
+                <section>
+                    <h2>Motivation</h2>
+                    <ol>
+                        <li class="fragment">
+                        GCC 6 now supports concepts - <a href="https://gcc.gnu.org/gcc-6/changes.html">Release Notes</a>
+                        <li class="fragment">How are c++ concepts different to Haskell typeclasses? - <a href="http://stackoverflow.com/questions/32124627/how-are-c-concepts-different-to-haskell-typeclasses">SO</a>
+                        <li class="fragment">You must be insane to mix c++ and haskell in single talk! - <span class="fragment"><b>Chalendge accepted!</b></span>
+                    </ol>
+                </section>
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Problem
+
+                        Programmer have a set of problems and he decided to use C++
+
+                        ```c++
+                        class Problem {
+                        public:
+                            // ...
+                        };
+
+                        int main() {
+                            set<Problem> to_do;
+
+                            to_do.insert(Problem());
+
+                            //...
+                        }
+                        ```
+                     </script>
+                </section>
+                <!-- Code -->
+                <section>
+                    <section>
+                    <h2>This is <strike>Spart</strike>a Problem!</h2>
+                    <pre  style="font-size: large; white-space: pre-wrap; word-wrap: break-word; ">
+In file included from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_tree.h:65:0</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/set:60</span>,
+                 from <span style="font-weight: bold">SetOfProblems.cpp:1</span>:
+/usr/include/c++/6/bits/stl_function.h: In instantiation of ‘<span style="font-weight: bold">constexpr bool std::less&lt;_Tp&gt;::operator()(const _Tp&amp;, const _Tp&amp;) const [with _Tp = Problem]</span>’:
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_tree.h:1806:11:</span>   required from ‘<span style="font-weight: bold">std::pair&lt;std::_Rb_tree_node_base*, std::_Rb_tree_node_base*&gt; std::_Rb_tree&lt;_Key, _Val, _KeyOfValue, _Compare, _Alloc&gt;::_M_get_insert_unique_pos(const key_type&amp;) [with _Key = Problem; _Val = Problem; _KeyOfValue = std::_Identity&lt;Problem&gt;; _Compare = std::less&lt;Problem&gt;; _Alloc = std::allocator&lt;Problem&gt;; std::_Rb_tree&lt;_Key, _Val, _KeyOfValue, _Compare, _Alloc&gt;::key_type = Problem]</span>’
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_tree.h:1859:28:</span>   required from ‘<span style="font-weight: bold">std::pair&lt;std::_Rb_tree_iterator&lt;_Val&gt;, bool&gt; std::_Rb_tree&lt;_Key, _Val, _KeyOfValue, _Compare, _Alloc&gt;::_M_insert_unique(_Arg&amp;&amp;) [with _Arg = Problem; _Key = Problem; _Val = Problem; _KeyOfValue = std::_Identity&lt;Problem&gt;; _Compare = std::less&lt;Problem&gt;; _Alloc = std::allocator&lt;Problem&gt;]</span>’
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_set.h:492:40:</span>   required from ‘<span style="font-weight: bold">std::pair&lt;typename std::_Rb_tree&lt;_Key, _Key, std::_Identity&lt;_Key&gt;, _Compare, typename __gnu_cxx::__alloc_traits&lt;_Alloc&gt;::rebind&lt;_Key&gt;::other&gt;::const_iterator, bool&gt; std::set&lt;_Key, _Compare, _Alloc&gt;::insert(std::set&lt;_Key, _Compare, _Alloc&gt;::value_type&amp;&amp;) [with _Key = Problem; _Compare = std::less&lt;Problem&gt;; _Alloc = std::allocator&lt;Problem&gt;; typename std::_Rb_tree&lt;_Key, _Key, std::_Identity&lt;_Key&gt;, _Compare, typename __gnu_cxx::__alloc_traits&lt;_Alloc&gt;::rebind&lt;_Key&gt;::other&gt;::const_iterator = std::_Rb_tree_const_iterator&lt;Problem&gt;; std::set&lt;_Key, _Compare, _Alloc&gt;::value_type = Problem]</span>’
+<span style="font-weight: bold">SetOfProblems.cpp:15:27:</span>   required from here
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_function.h:387:20:</span> <span style="font-weight: bold; color: #aa0000">error: </span>no match for ‘<span style="font-weight: bold">operator&lt;</span>’ (operand types are ‘<span style="font-weight: bold">const Problem</span>’ and ‘<span style="font-weight: bold">const Problem</span>’)
+       { return <span style="font-weight: bold; color: #aa0000">__x &lt; __y</span>; }
+                <span style="font-weight: bold; color: #aa0000">~~~~^~~~~</span>
+In file included from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_algobase.h:64:0</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_tree.h:63</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/set:60</span>,
+                 from <span style="font-weight: bold">SetOfProblems.cpp:1</span>:
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_pair.h:369:5:</span> <span style="font-weight: bold; color: #00aaaa">note: </span>candidate: template&lt;class _T1, class _T2&gt; constexpr bool std::operator&lt;(const std::pair&lt;_T1, _T2&gt;&amp;, const std::pair&lt;_T1, _T2&gt;&amp;)
+     <span style="font-weight: bold; color: #00aaaa">operator</span>&lt;(const pair&lt;_T1, _T2&gt;&amp; __x, const pair&lt;_T1, _T2&gt;&amp; __y)
+     <span style="font-weight: bold; color: #00aaaa">^~~~~~~~</span>
+                </pre>
+                    </section>
+                    <section>
+                        <pre style="font-size: large; white-space: pre-wrap; word-wrap: break-word; ">
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_pair.h:369:5:</span> <span style="font-weight: bold; color: #00aaaa">note: </span>  template argument deduction/substitution failed:
+In file included from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_tree.h:65:0</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/set:60</span>,
+                 from <span style="font-weight: bold">SetOfProblems.cpp:1</span>:
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_function.h:387:20:</span> <span style="font-weight: bold; color: #00aaaa">note: </span>  ‘<span style="font-weight: bold">const Problem</span>’ is not derived from ‘<span style="font-weight: bold">const std::pair&lt;_T1, _T2&gt;</span>’
+       { return <span style="font-weight: bold; color: #00aaaa">__x &lt; __y</span>; }
+                <span style="font-weight: bold; color: #00aaaa">~~~~^~~~~</span>
+In file included from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_algobase.h:67:0</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_tree.h:63</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/set:60</span>,
+                 from <span style="font-weight: bold">SetOfProblems.cpp:1</span>:
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_iterator.h:298:5:</span> <span style="font-weight: bold; color: #00aaaa">note: </span>candidate: template&lt;class _Iterator&gt; bool std::operator&lt;(const std::reverse_iterator&lt;_Iterator&gt;&amp;, const std::reverse_iterator&lt;_Iterator&gt;&amp;)
+     <span style="font-weight: bold; color: #00aaaa">operator</span>&lt;(const reverse_iterator&lt;_Iterator&gt;&amp; __x,
+     <span style="font-weight: bold; color: #00aaaa">^~~~~~~~</span>
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_iterator.h:298:5:</span> <span style="font-weight: bold; color: #00aaaa">note: </span>  template argument deduction/substitution failed:
+In file included from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_tree.h:65:0</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/set:60</span>,
+                 from <span style="font-weight: bold">SetOfProblems.cpp:1</span>:
+<span style="font-weight: bold">/usr/include/c++/6/bits/stl_function.h:387:20:</span> <span style="font-weight: bold; color: #00aaaa">note: </span>  ‘<span style="font-weight: bold">const Problem</span>’ is not derived from ‘<span style="font-weight: bold">const std::reverse_iterator&lt;_Iterator&gt;</span>’
+       { return <span style="font-weight: bold; color: #00aaaa">__x &lt; __y</span>; }
+                <span style="font-weight: bold; color: #00aaaa">~~~~^~~~~</span>
+In file included from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_algobase.h:67:0</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/bits/stl_tree.h:63</span>,
+                 from <span style="font-weight: bold">/usr/include/c++/6/set:60</span>,
+                 from <span style="font-weight: bold">SetOfProblems.cpp:1</span>:
+                        </pre>
+                    </section>
+                </section>
+               <section>
+               <h3>C++ concepts is Salvation?</h3>
+
+               <pre  style="font-size: large; white-space: pre-wrap; word-wrap: break-word; ">
+               <span style="font-weight: bold">ConceptOfProblems.cpp:</span> In function ‘<span style="font-weight: bold">int main()</span>’:
+<span style="font-weight: bold">ConceptOfProblems.cpp:28:16:</span> <span style="font-weight: bold; color: #aa0000">error: </span>template constraint failure
+     set&lt;Problem<span style="font-weight: bold; color: #aa0000">&gt;</span> to_do;
+                <span style="font-weight: bold; color: #aa0000">^</span>
+<span style="font-weight: bold">ConceptOfProblems.cpp:28:16:</span> <span style="font-weight: bold; color: #00aaaa">note: </span>  constraints not satisfied
+<span style="font-weight: bold">ConceptOfProblems.cpp:28:16:</span> <span style="font-weight: bold; color: #00aaaa">note: </span>  concept ‘<span style="font-weight: bold">LessComparable&lt;Problem&gt;()</span>’ was not satisfied
+
+               </pre>
+               <div class="fragment fade-up">
+                    <pre>
+                    <code class="cpp" data-noescape>
+template&lt;typename T&gt;
+concept bool
+LessComparable()
+{
+  return requires (T a, T b)
+  {
+    { a &lt; b } -> bool;
+  };
+}
+                     </code>
+                     </pre>
+               </div>
+                </section>
+                <section>
+                    <section data-markdown>
+                    <script type="text/template">
+                        ## Haskell type classes
+
+                        Haskell:
+                        ```haskell
+                        class Ord a where
+                            (<) :: a -> a -> Bool
+                        ```
+
+                        C++:
+                        ```cpp
+                        template<typename T>
+                        concept bool LessComparable() {
+                            return requires (T a, T b) {
+                                { a < b } -> bool;
+                            };
+                        }
+                        ```
+                     </script>                    
+                     </section>
+                     <section data-markdown>
+                     <script type="text/template">
+                    Concept
+                    ```cpp
+                        template<class T>
+                        concept bool Stringable = 
+                            requires(const T& a) {
+                                {to_string(a)} -> std::string;
+                            };
+                    ```
+                    Instance
+                    ```cpp
+                        struct Person {
+                            friend std::string to_string(const Person&);
+                        };
+                    ```
+                    Algorithm
+                    ```cpp
+                        std::string bold(Stringable s) {
+                            return "<b>" + to_string(s) + "</b>";
+                        }
+                    ```
+                    Instantiation
+                    ```cpp
+                        std::cout << bold(Person{}) << "\n";
+                    ```
+                    </script>
+                     </section>
+                     <section data-markdown>
+                     <script type="text/template">
+                     Type class (concept)
+                     ```
+                     class Stringable a where
+                        toString :: a -> String
+                     ```
+                     Instance
+                     ```
+                     data Person = Person {firstname :: String, lastname :: String}
+
+                     instance Stringable Person where
+                        toString p = take 1 (firstname p) ++ ". " ++ lastname p
+                     ```
+                     Algorithm
+                     ```
+                     bold :: (Stringable a) => a -> String
+                     bold a = "<b>" ++ toString a ++ "</b>"
+                     ```
+                     Instantiation
+                     ```
+                     putStrLn $ bold $ Person "John" "Smith"
+                     ```
+                    </script>
+                     </section>
+                </section>
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                        ## Ad hoc polymorhism
+                        ```
+                        class Nameble a where
+                            name :: a -> String
+
+                        data Simpson = Bart | Lisa | Homer | Marge deriving Show
+
+                        data Griffin = Peter | Lois | Meg | Chris |
+                                       Stewie | Brian deriving Show
+
+                        instance Nameble Simpson where
+                            name a = show a ++ " Simpson"
+
+                        instance  Nameble Griffin where
+                            name a = show a ++ " Griffin"
+
+                        greeting :: (Nameble a) => a -> String
+                        greeting a = "Hello, " ++ name a
+                        ```
+                        ```
+                        main = do
+                            putStrLn $ greeting Bart
+                            putStrLn $ greeting Peter
+
+                        ```
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                        ## Parametric polymorphism
+                        ```
+                        template <class T>
+                        concept bool Nameble = requires(const T& a) {
+                            { a.name() } -> std::string;
+                        };
+                        class Simpson {
+                        public:
+                            enum class Name {Bart, Lisa, Homer, Marge, };
+                            Simpson(Name _name): name_{_name} {}
+                            std::string name() const;
+                        };
+                        class Griffin {
+                        public:
+                            enum class Name { Peter, Lois, Meg, Chris, Stewie, Brian, };
+                            Griffin(Name _name): name_{_name} {}
+                            std::string name() const;
+                        };
+                        ```
+                        ```
+                        std::string greeting(Nameble person) {
+                            return "Hello, " + person.name();
+                        }
+                        int main() {
+                            std::cout << greeting(Simpson{Simpson::Name::Bart}) << "\n";
+                            std::cout << greeting(Griffin{Griffin::Name::Lois}) << "\n";
+                            return 0;
+                        }
+                        ```
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Dynamic dispatch
+                            ```
+                            class Nameble {
+                            public:
+                                virtual ~Nameble() {}
+                                virtual std::string name() const = 0;
+                            };
+                            class Simpson {
+                            public:
+                                std::string name() const override;
+                            };
+                            class Griffin {
+                            public:
+                                std::string name() const override;
+                            };
+                            ```
+                            ```
+                            std::string greeting(const Nameble& person) {
+                                return "Hello, " + person.name();
+                            }
+
+                            int main() {
+                                std::cout << greeting(Simpson{Simpson::Name::Bart}) << "\n";
+                                std::cout << greeting(Griffin{Griffin::Name::Lois}) << "\n";
+                                return 0;
+                            }
+                            ```
+                        </script>
+                    </section>
+                </section>
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                        ## Multiple type concepts
+                        ```
+                        template<class Func, class... Args>
+                        concept bool Callable = 
+                            requires(Func&& f, Args... args) {
+                                {f(args...)};
+                            };
+                        ```
+                        ```
+                        template<class Func, class... Args>
+                            requires Callable<Func, Args...>
+                        decltype(auto) log_and_invoke(Func&& f, Args... args) {
+                            // log function call
+                            return f(std::forward<Args>(args)...);
+                        }
+                        ```    
+                        </script>
+                    </section>
+                </section>
+                <section>
+                    <h2>References</h2>
+                    <small>
+                    <ol>
+                    <li>ISO/IEC JTC1 SC22 WG21 N
+                    4377 Information technology -- Programming Languages — C++ Extensions for Concepts - <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4377.pdf">Paper</a>
+                    <li>Александр Фокин, От Concepts к Concepts Lite - <a href="https://www.youtube.com/watch?v=482JCDghZ8s">Video</a>
+                    <li>Andrew Sutton, Defining Concepts - <a href="https://accu.org/index.php/journals/2198">Blogpost</a>
+                    <li>Tom onermann, Why Concepts didn't make c++17 - <a href="http://honermann.net/blog/2016/03/06/why-concepts-didnt-make-cxx17/">Blogpost</a>
+                    <li>Andrew Sutton, Origin - <a href="https://github.com/asutton/origin">Code</a>
+                    <li>How are c++ concepts different to Haskell typeclasses? - <a href="http://stackoverflow.com/questions/32124627/how-are-c-concepts-different-to-haskell-typeclasses">SO</a>
+                    <li>Miran Lipovaca, Learn You a Haskell for Great Good! - <a href="http://learnyouahaskell.com/">eBook</a>
+                    <li>Donald Bruce Stewart, Bryan O'Sullivan, John Goerzen, Real World Haskell
+                    <li>OOP vs Type classes - <a href="https://wiki.haskell.org/OOP_vs_type_classes">Blogpost</a>
+                    <li>Implementing, and Understanding Type Classes - <a href="http://okmij.org/ftp/Computation/typeclass.html">Blogpost</a>
+                    <li>Jean-Philippe Bernardy, Patrik Jansson, Marcin Zalewski, Sibylle Schupp, Andreas Priesnitz, A comparison of C++ concepts and Haskell type classes - <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.566.8506&rep=rep1&type=pdf">Paper</a>
+                    <li>Andrew Sutton, Bjarne Stroustrup, Concepts Lite: Constraining Templates with Predicates - <a href="https://groups.google.com/a/isocpp.org/group/concepts/attach/df9a57cb574ae9f9/concepts-lite.pdf?part=4&authuser=0">Paper</a>
+                    </ol>
+                </section>
+            </div>
+        </div>
+        <script src="reveal.js/lib/js/head.min.js"></script>
+        <script src="reveal.js/js/reveal.js"></script>
+        <script>
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                dependencies: [
+                    // Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
+                    { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+
+                    // Interpret Markdown in <section> elements
+                    { src: 'reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+            
+                    // Syntax highlight for <code> elements
+                    { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+
+                    // Speaker notes
+                    { src: 'reveal.js/plugin/notes/notes.js', async: true }
+                ]
+            });
+        </script>
+
+    </body>
+</html>
