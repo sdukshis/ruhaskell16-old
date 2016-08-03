@@ -183,3 +183,25 @@ boldD stringableDict a = toStringD stringableDict a
 putStrLn $ bold personStringableDictionary (Person "John" "Smith")
 ```
 Type classes are a way to pass instance dictionaries implicitly
+
+
+### C++ virtual function
+```cpp
+// Abstract class
+class Stringable {
+public:
+    virtual ~Stringable() {}
+    virtual std::string to_string() const = 0;
+};
+// Inheretance
+class Person: public Stringable {
+public:
+    std::string to_string() const override { return ...}
+};
+// Algorithm
+std::string bold(const Stringable& s) {
+    return "<b>" + s.to_string() + "</b>";
+}
+
+std::cout << bold(Person{"John", "Smith"}) << "\n";
+```
