@@ -165,43 +165,134 @@ putStrLn $ bold $ Person "John" "Smith"
 ```
 
 
-### We need to go deeper
+### Dictionary passing
 ```haskell
-data StringableD a = StringableD {
-    toString :: a -> String
-}
+data Stringable a = Stringable { toString :: a -> String }
 
-personStringableDictionary :: StringableD Person
-personStringableDictionary = StringlableD {
-    toStringD = ...
-}
+data Person = Person { firstname :: String, lastname :: String }
 
-boldD :: StringableD a -> a -> String -- '=>' became '->'
+personToString :: Person -> String
+personToString p = take 1 (firstname p) ++ ". " ++ lastname p
+
+dStringablePerson :: Stringable Person
+dStringablePerson = Stringable { toString = personToString }
+
+bold :: Stringable a -> a -> String -- '=>' became '->'
+bold dStringlable a = "<b>" ++ toString dStringlable a ++ "</b>"
+
 -- the context is now a parameter!
-boldD stringableDict a = toStringD stringableDict a 
-
-putStrLn $ bold personStringableDictionary (Person "John" "Smith")
+putStrLn $ bold dStringablePerson $ Person "John" "Smith"
 ```
 Type classes are a way to pass instance dictionaries implicitly
 
 
-### C++ virtual function
+### We need to go deeper
+```
+ghc -ddump-inlinings -ddump-simpl -dsuppress-module-prefixes \
+    -dsuppress-idinfo -dsuppress-coercions \
+    -dsuppress-type-applications -fforce-recomp -O0 main.hs
+```
+```haskell
+toString :: forall a_alG. Stringable a_alG => a_alG -> String
+toString = \ (@ a_alG) (tpl_B1 :: Stringable a_alG) ->
+    case tpl_B1 of tpl_B1 { D:Stringable tpl_B2 tpl_B3 -> tpl_B2 }
+
+bold :: forall a. Stringable a => a -> String
+bold = \ (@ a) ($dStringable :: Stringable a) (a1 :: a) ->
+    ++
+      (unpackCString# "<b>"#)
+      (++ (toString $dStringable a1) (unpackCString# "</b>"#))
+$fStringablePerson :: Stringable Person
+$fStringablePerson = D:Stringable $ctoString 
+
+putStrLn
+    (bold
+       $fStringablePerson
+       (Person (unpackCString# "John"#) (unpackCString# "Smith"#)))
+```
+<!-- .element: class="fragment"-->
+
+
+### C++ parametrized abstract class
 ```cpp
-// Abstract class
-class Stringable {
-public:
-    virtual ~Stringable() {}
-    virtual std::string to_string() const = 0;
+template<typename T> struct Stringable {
+    virtual string to_string(const T&) const = 0;
 };
-// Inheretance
-class Person: public Stringable {
-public:
-    std::string to_string() const override { return ...}
+```
+<!-- .element: class="fragment"-->
+```cpp
+template<typename T> struct StringablePerson;
+template<> struct StringablePerson<Person>: Stringable<Person> {
+    string to_string(const Person& p) const override {
+        return p.firstname().substr(0, 1) + ". " + p.lastname();
+    }
 };
-// Algorithm
-std::string bold(const Stringable& s) {
-    return "<b>" + s.to_string() + "</b>";
+
+StringablePerson<Person> dStringable;
+
+template<typename T>
+string bold(const Stringable<T>& dict, const T& a) {
+    return "<b>" + dict.to_string(a) + "</b>";
 }
 
-std::cout << bold(Person{"John", "Smith"}) << "\n";
+cout << bold(dStringable, Person{"John", "Smith"}) << endl;
 ```
+<!-- .element: class="fragment"-->
+
+
+
+### Conclusions
+
+* C++ concepts and Haskell type classes just looks the same
+<!-- .element: class="fragment"-->
+* But:
+<!-- .element: class="fragment"-->
+    * they have different scope
+    <!-- .element: class="fragment"-->
+    * and different purpose
+    <!-- .element: class="fragment"-->
+* Nearest analog to type classes in C++ is parametrized abstract classes
+<!-- .element: class="fragment"-->
+
+
+### References
+1. ISO/IEC JTC1 SC22 WG21 N
+4377 Information technology -- Programming Languages — C++ Extensions for Concepts - [Paper](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4377.pdf)
+2. Александр Фокин, От Concepts к Concepts Lite - [Video](https://www.youtube.com/watch?v=482JCDghZ8s)
+3.  Andrew Sutton, Defining Concepts - [Blogpost](https://accu.org/index.php/journals/2198)
+4. Tom onermann, Why Concepts didn't make c++17 - [Blogpost](http://honermann.net/blog/2016/03/06/why-concepts-didnt-make-cxx17/)
+5.  Andrew Sutton, Origin - [Source](https://github.com/asutton/origin)
+6. How are c++ concepts different to Haskell typeclasses? - [SO](http://stackoverflow.com/questions/32124627/how-are-c-concepts-different-to-haskell-typeclasses)
+7. Miran Lipovaca, Learn You a Haskell for Great Good! - [eBook](http://learnyouahaskell.com/)
+
+
+## More references
+8. D. Bruce Stewart, B. O'Sullivan, J. Goerzen, Real World Haskell
+9. OOP vs Type classes - [Blogpost](https://wiki.haskell.org/OOP_vs_type_classes)
+10. Implementing, and Understanding Type Classes - [Blogpost](http://okmij.org/ftp/Computation/typeclass.html)
+11. Parametric Polymorphism in Haskell, Ben Deane - [Slides](http://sm-haskell-users-group.github.io/pdfs/Ben%20Deane%20-%20Parametric%20Polymorphism.pdf)
+12. Understanding C++ Concepts through Haskell Type Classes, Bartosz Milewski - [Video](https://vimeo.com/17031425)
+13. A comparison of C++ concepts and Haskell type classes, Jean-Philippe Bernardy and others - [Paper](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.566.8506&rep=rep1&type=pdf)
+14. Concepts for C++1y: The Challenge, B. Stroustrup - [Slides](http://www.cs.ox.ac.uk/ralf.hinze/WG2.8/28/slides/bjarne.pdf)
+15. OOP vs type classes - [Blogpost](https://wiki.haskell.org/OOP_vs_type_classes)
+16. Instances and Dictionaries, Jonathan Fischoff - [Blogpost](https://www.schoolofhaskell.com/user/jfischoff/instances-and-dictionaries)
+
+
+## Thank you for your attention!
+
+Contacts:
+<table>
+<tbody>
+<tr><td>email</td><td>Pavel.Filonov@kaspersky.com</td></tr>
+<tr><td>github</td><td><a href="https://github.com/sdukshis">sdukshis</a></td></tr>
+<tr><td>skype</td><td>filonovpv</td></tr>
+<tr><td>twitter</td><td>@filonovpv</td></tr>
+</tbody>
+</table>
+
+<!-- |----------:|-------------------------------------------|
+| email     | Pavel.Filonov@kaspersky.com               |
+| github    |[sdukshis](https://github.com/sdukshis)    |
+| skype     | filonovpv                                 |
+| twitter   | @filonovpv                                |
+ -->

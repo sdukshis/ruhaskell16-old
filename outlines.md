@@ -31,3 +31,7 @@
 10. Implementing, and Understanding Type Classes - [Blogpost](http://okmij.org/ftp/Computation/typeclass.html)
 11. Parametric Polymorphism in Haskell, Ben Deane - [Slides](http://sm-haskell-users-group.github.io/pdfs/Ben%20Deane%20-%20Parametric%20Polymorphism.pdf)
 12. Understanding C++ Concepts through Haskell Type Classes, Bartosz Milewski - [Video](https://vimeo.com/17031425)
+13. A comparison of C++ concepts and Haskell type classes, Jean-Philippe Bernardy, Patrik Jansson, Marcin Zalewski, Sibylle Schupp and Andreas Priesnitz - [Paper](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.566.8506&rep=rep1&type=pdf)
+14. Concepts for C++1y: The Challenge, Bjarne Stroustrup - [Slides](http://www.cs.ox.ac.uk/ralf.hinze/WG2.8/28/slides/bjarne.pdf)
+15. OOP vs type classes - [Blogpost](https://wiki.haskell.org/OOP_vs_type_classes)
+16. Instances and Dictionaries, Jonathan Fischoff - [Blogpost](https://www.schoolofhaskell.com/user/jfischoff/instances-and-dictionaries)
